@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>宝可梦属性倍率查询</title>
+    <meta name="description" content="支持防守方与攻击方两种模式的宝可梦属性倍率查询工具。" />
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <header class="page-header">
+        <h1>宝可梦属性倍率查询</h1>
+        <div class="toolbar">
+          <div class="control-strip">
+            <div class="mode-switch" role="tablist" aria-label="查询模式切换">
+              <button
+                id="mode-defense"
+                class="mode-button is-active"
+                type="button"
+                role="tab"
+                aria-selected="true"
+                data-mode="defense"
+              >
+                防守方
+              </button>
+              <button
+                id="mode-attack"
+                class="mode-button"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                data-mode="attack"
+              >
+                攻击方
+              </button>
+            </div>
+
+            <div class="theme-switch" role="tablist" aria-label="主题切换">
+              <button
+                class="theme-button is-active"
+                type="button"
+                role="tab"
+                aria-selected="true"
+                data-theme="light"
+              >
+                浅色
+              </button>
+              <button
+                class="theme-button"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                data-theme="dark"
+              >
+                深色
+              </button>
+            </div>
+          </div>
+
+          <button id="reset-button" class="text-button" type="button">重置</button>
+        </div>
+      </header>
+
+      <section class="workspace" aria-label="属性倍率查询">
+        <div class="selection-bar">
+          <h2 id="selection-title">选择防守方属性</h2>
+          <span id="selection-limit" class="selection-limit">最多 2 个</span>
+        </div>
+
+        <div id="type-grid" class="type-grid" aria-live="polite"></div>
+
+        <div class="results-header">
+          <h2 id="results-title">请选择属性</h2>
+          <button id="neutral-toggle" class="text-button text-button--toggle is-active" type="button" aria-pressed="true">
+            显示 1x 属性
+          </button>
+        </div>
+        <div id="results-panel" class="results-panel" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <script src="scripts/app.js"></script>
+  </body>
+</html>
+
