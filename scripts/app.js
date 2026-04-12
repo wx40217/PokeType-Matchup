@@ -251,6 +251,26 @@ function selectionHint() {
     : "选 1 个攻击属性，查看它对单属性和双属性目标的完整倍率。";
 }
 
+function resultsHint() {
+  if (!state.selected.length) {
+    return "";
+  }
+
+  if (state.mode === "attack" && state.focusOnly) {
+    return "当前只显示 4x、2x 和 0x 重点倍率";
+  }
+
+  if (state.neutralHidden) {
+    return `已隐藏 1x${state.mode === "defense" ? "正常伤害" : "常规伤害"}`;
+  }
+
+  return state.mode === "defense" ? "结果按承伤倍率分组" : "结果按输出倍率分组";
+}
+
+function emptyStateDescription() {
+  return state.mode === "defense" ? "防守方最多选 2 个属性" : "攻击方一次选 1 个属性";
+}
+
 function createTypeButton(type) {
   const button = document.createElement("button");
   const name = document.createElement("span");
@@ -312,7 +332,8 @@ function renderMeta() {
   els.selectionTitle.textContent = state.mode === "defense" ? "选择防守属性" : "选择攻击属性";
   els.selectionHelper.textContent = selectionHint();
   els.selectionLimit.textContent = `已选 ${state.selected.length} / ${maxSelection}`;
-  els.resultsHelper.textContent = "";
+  els.resultsHelper.textContent = resultsHint();
+  els.reset.disabled = state.selected.length === 0;
 
   els.modeButtons.forEach((button) => {
     const active = button.dataset.mode === state.mode;
@@ -371,6 +392,7 @@ function renderEmpty() {
   els.resultsPanel.innerHTML = `
     <div class="empty-state" role="status">
       <p class="empty-state__title">先选属性，再看结果</p>
+      <p class="empty-state__desc">${emptyStateDescription()}</p>
     </div>
   `;
 }
