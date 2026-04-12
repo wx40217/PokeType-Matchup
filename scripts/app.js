@@ -75,6 +75,7 @@ const CHART = {
 };
 
 const RESULT_ORDER = [4, 2, 1, 0.5, 0.25, 0];
+const ATTACK_FOCUS_ORDER = [4, 2, 0];
 const THEME_KEY = "poke-type-theme";
 const THEME_MODES = new Set(["system", "light", "dark"]);
 const themeQuery = typeof window.matchMedia === "function"
@@ -87,6 +88,7 @@ const state = {
   themeMode: getThemeMode(),
   theme: "light",
   neutralHidden: true,
+  focusOnly: true,
 };
 
 state.theme = resolveTheme(state.themeMode);
@@ -94,12 +96,15 @@ state.theme = resolveTheme(state.themeMode);
 const els = {
   grid: document.getElementById("type-grid"),
   selectionTitle: document.getElementById("selection-title"),
+  selectionHelper: document.getElementById("selection-helper"),
   selectionLimit: document.getElementById("selection-limit"),
   resultsTitle: document.getElementById("results-title"),
+  resultsHelper: document.getElementById("results-helper"),
   resultsPanel: document.getElementById("results-panel"),
   statusMessage: document.getElementById("status-message"),
   reset: document.getElementById("reset-button"),
   neutralToggle: document.getElementById("neutral-toggle"),
+  focusToggle: document.getElementById("focus-toggle"),
   modeButtons: [...document.querySelectorAll(".mode-button")],
   themeButtons: [...document.querySelectorAll(".theme-button")],
 };
@@ -200,6 +205,24 @@ function multiplierMarkup(value) {
   return `<span class="multiplier-text">${formatMultiplier(value)}</span>`;
 }
 
+function multiplierLabel(value) {
+  if (state.mode === "defense") {
+    if (value === 4) return "最危险";
+    if (value === 2) return "需要留意";
+    if (value === 1) return "正常伤害";
+    if (value === 0.5) return "有抗性";
+    if (value === 0.25) return "强抗";
+    return "完全免疫";
+  }
+
+  if (value === 4) return "最值得看";
+  if (value === 2) return "稳定克制";
+  if (value === 1) return "常规伤害";
+  if (value === 0.5) return "效果一般";
+  if (value === 0.25) return "不太推荐";
+  return "完全无效";
+}
+
 function singleChip(key) {
   const type = findType(key);
   return `<span class="result-chip" style="background:${type.color};color:${getContrastText(type.color)};">${type.label}</span>`;
@@ -220,10 +243,12 @@ function dualChip(keys) {
 
 function selectionHint() {
   if (state.mode === "defense") {
-    return "先选择 1 到 2 个防守属性，下面会按 4x、2x、1x、1/2、1/4 和 0 倍显示会受到的攻击倍率。";
+    return "最多选 2 个属性";
   }
 
-  return "先选择 1 个攻击属性，下面会分别列出它对单属性和双属性目标的伤害倍率。";
+  return state.focusOnly
+    ? "先看最值得注意的 4x、2x 和 0x 倍率，需要时再展开全部。"
+    : "选 1 个攻击属性，查看它对单属性和双属性目标的完整倍率。";
 }
 
 function createTypeButton(type) {
@@ -273,10 +298,21 @@ function syncTypeButtons() {
   });
 }
 
+function visibleMultipliers() {
+  if (state.mode === "attack" && state.focusOnly) {
+    return ATTACK_FOCUS_ORDER;
+  }
+
+  return RESULT_ORDER.filter((value) => !state.neutralHidden || value !== 1);
+}
+
 function renderMeta() {
   const maxSelection = state.mode === "defense" ? 2 : 1;
-  els.selectionTitle.textContent = state.mode === "defense" ? "选择防守方属性" : "选择攻击方属性";
-  els.selectionLimit.textContent = `最多 ${maxSelection} 个`;
+
+  els.selectionTitle.textContent = state.mode === "defense" ? "选择防守属性" : "选择攻击属性";
+  els.selectionHelper.textContent = selectionHint();
+  els.selectionLimit.textContent = `已选 ${state.selected.length} / ${maxSelection}`;
+  els.resultsHelper.textContent = "";
 
   els.modeButtons.forEach((button) => {
     const active = button.dataset.mode === state.mode;
@@ -284,9 +320,17 @@ function renderMeta() {
     button.setAttribute("aria-pressed", active ? "true" : "false");
   });
 
+  const showFocusToggle = state.mode === "attack";
+  els.focusToggle.hidden = !showFocusToggle;
+  els.focusToggle.classList.toggle("is-active", state.focusOnly);
+  els.focusToggle.setAttribute("aria-pressed", state.focusOnly ? "true" : "false");
+  els.focusToggle.textContent = `重点倍率：${state.focusOnly ? "精简" : "全部"}`;
+
+  const showNeutralToggle = state.mode === "defense" || !state.focusOnly;
+  els.neutralToggle.hidden = !showNeutralToggle;
   els.neutralToggle.classList.toggle("is-active", state.neutralHidden);
   els.neutralToggle.setAttribute("aria-pressed", state.neutralHidden ? "true" : "false");
-  els.neutralToggle.textContent = state.neutralHidden ? "隐藏 1x 属性" : "显示 1x 属性";
+  els.neutralToggle.textContent = `1x：${state.neutralHidden ? "隐藏" : "显示"}`;
 }
 
 function buildDefenseBuckets() {
@@ -315,7 +359,7 @@ const resultRow = (label, caption, body) => `
   <section class="result-row">
     <div class="result-row__head">
       <span class="multiplier-badge">${label}</span>
-      ${caption || ""}
+      ${caption ? `<span class="multiplier-note">${caption}</span>` : ""}
     </div>
     <div class="result-row__body">${body}</div>
   </section>
@@ -323,35 +367,35 @@ const resultRow = (label, caption, body) => `
 
 function renderEmpty() {
   els.resultsTitle.textContent = "等待选择";
+  els.resultsHelper.textContent = "";
   els.resultsPanel.innerHTML = `
     <div class="empty-state" role="status">
-      <p class="empty-state__title">还没有选择属性</p>
-      <p class="empty-state__desc">${selectionHint()}</p>
+      <p class="empty-state__title">先选属性，再看结果</p>
     </div>
   `;
 }
 
 function renderDefenseResults() {
-  els.resultsTitle.textContent = state.selected.map((key) => findType(key).label).join(" / ");
+  const chosen = state.selected.map((key) => findType(key).label).join(" / ");
   const buckets = buildDefenseBuckets();
 
-  els.resultsPanel.innerHTML = RESULT_ORDER
-    .filter((value) => !state.neutralHidden || value !== 1)
+  els.resultsTitle.textContent = `防守方：${chosen}`;
+  els.resultsPanel.innerHTML = visibleMultipliers()
     .map((value) => {
       const items = buckets.get(value);
       return items.length
-        ? resultRow(multiplierMarkup(value), "", `<div class="chips-wrap">${items.map(singleChip).join("")}</div>`)
+        ? resultRow(multiplierMarkup(value), multiplierLabel(value), `<div class="chips-wrap">${items.map(singleChip).join("")}</div>`)
         : "";
     })
     .join("");
 }
 
 function renderAttackResults() {
-  els.resultsTitle.textContent = findType(state.selected[0]).label;
+  const attacker = findType(state.selected[0]).label;
   const buckets = buildAttackBuckets();
 
-  els.resultsPanel.innerHTML = RESULT_ORDER
-    .filter((value) => !state.neutralHidden || value !== 1)
+  els.resultsTitle.textContent = `攻击方：${attacker}`;
+  els.resultsPanel.innerHTML = visibleMultipliers()
     .map((value) => {
       const group = buckets.get(value);
       if (!group.single.length && !group.dual.length) {
@@ -367,7 +411,7 @@ function renderAttackResults() {
         blocks.push(`<div class="subgroup"><p class="subgroup__title">双属性 · ${group.dual.length}</p><div class="chips-wrap">${group.dual.map(dualChip).join("")}</div></div>`);
       }
 
-      return resultRow(multiplierMarkup(value), "", blocks.join(""));
+      return resultRow(multiplierMarkup(value), multiplierLabel(value), blocks.join(""));
     })
     .join("");
 }
@@ -395,8 +439,9 @@ function announce() {
   }
 
   const selection = state.selected.map((key) => findType(key).label).join(" / ");
-  const neutralState = state.neutralHidden ? "隐藏" : "显示";
-  els.statusMessage.textContent = `${side}：${selection}，${neutralState} 1x 属性`;
+  const density = state.mode === "attack" ? `，重点倍率${state.focusOnly ? "精简" : "全部"}` : "";
+  const neutralState = state.mode === "attack" && state.focusOnly ? "" : `，1x${state.neutralHidden ? "隐藏" : "显示"}`;
+  els.statusMessage.textContent = `${side}：${selection}${density}${neutralState}`;
 }
 
 function render() {
@@ -443,11 +488,14 @@ els.themeButtons.forEach((button) => {
   button.addEventListener("click", () => applyTheme(button.dataset.themeMode));
 });
 
+els.focusToggle.addEventListener("click", () => {
+  state.focusOnly = !state.focusOnly;
+  render();
+});
+
 els.neutralToggle.addEventListener("click", () => {
   state.neutralHidden = !state.neutralHidden;
-  renderResults();
-  announce();
-  renderMeta();
+  render();
 });
 
 els.reset.addEventListener("click", () => {

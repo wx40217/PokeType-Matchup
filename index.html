@@ -11,70 +11,81 @@
   <body>
     <main class="page-shell">
       <header class="page-header">
-        <h1>宝可梦属性倍率查询</h1>
+        <div class="page-intro">
+          <div class="page-heading">
+            <h1>宝可梦属性倍率查询</h1>
+          </div>
+        </div>
+
         <div class="toolbar">
           <div class="control-strip">
-            <div class="mode-switch" role="group" aria-label="查询模式切换">
-              <button
-                id="mode-defense"
-                class="mode-button is-active"
-                type="button"
-                aria-pressed="true"
-                data-mode="defense"
-              >
-                防守方
-              </button>
-              <button
-                id="mode-attack"
-                class="mode-button"
-                type="button"
-                aria-pressed="false"
-                data-mode="attack"
-              >
-                攻击方
-              </button>
+            <div class="mode-switch-wrap">
+              <p class="control-label">查询模式</p>
+              <div class="mode-switch" role="group" aria-label="查询模式切换">
+                <button
+                  id="mode-defense"
+                  class="mode-button is-active"
+                  type="button"
+                  aria-pressed="true"
+                  data-mode="defense"
+                >
+                  防守方
+                </button>
+                <button
+                  id="mode-attack"
+                  class="mode-button"
+                  type="button"
+                  aria-pressed="false"
+                  data-mode="attack"
+                >
+                  攻击方
+                </button>
+              </div>
             </div>
 
-            <div class="theme-switch" role="group" aria-label="主题切换">
-              <button
-                class="theme-button is-active"
-                type="button"
-                aria-pressed="true"
-                aria-label="跟随系统"
-                title="跟随系统"
-                data-theme-mode="system"
-              >
-                <svg class="theme-button__icon" viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="12" cy="12" r="7" fill="none" />
-                  <path d="M12 5a7 7 0 0 1 0 14Z" />
-                  <path d="M12 3v2M12 19v2M3 12h2M19 12h2" />
-                </svg>
-              </button>
-              <button
-                class="theme-button"
-                type="button"
-                aria-pressed="false"
-                aria-label="浅色模式"
-                title="浅色模式"
-                data-theme-mode="light"
-              >
-                <svg class="theme-button__icon" viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="12" cy="12" r="4" fill="none" />
-                  <path d="M12 2.75v2.5M12 18.75v2.5M4.75 4.75l1.8 1.8M17.45 17.45l1.8 1.8M2.75 12h2.5M18.75 12h2.5M4.75 19.25l1.8-1.8M17.45 6.55l1.8-1.8" />
-                </svg>
-              </button>
-              <button
-                class="theme-button"
-                type="button"
-                aria-pressed="false"
-                aria-label="深色模式"
-                title="深色模式"
-                data-theme-mode="dark"
-              >
-                <svg class="theme-button__icon" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M18.5 14.6A7.5 7.5 0 0 1 9.4 5.5a7.5 7.5 0 1 0 9.1 9.1Z" fill="none" />
-                </svg>
-              </button>
+            <div class="theme-switch-wrap">
+              <p class="control-label control-label--muted">主题</p>
+              <div class="theme-switch" role="group" aria-label="主题切换">
+                <button
+                  class="theme-button is-active"
+                  type="button"
+                  aria-pressed="true"
+                  aria-label="跟随系统"
+                  title="跟随系统"
+                  data-theme-mode="system"
+                >
+                  <svg class="theme-button__icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="7" fill="none" />
+                    <path d="M12 5a7 7 0 0 1 0 14Z" />
+                    <path d="M12 3v2M12 19v2M3 12h2M19 12h2" />
+                  </svg>
+                </button>
+                <button
+                  class="theme-button"
+                  type="button"
+                  aria-pressed="false"
+                  aria-label="浅色模式"
+                  title="浅色模式"
+                  data-theme-mode="light"
+                >
+                  <svg class="theme-button__icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="4" fill="none" />
+                    <path d="M12 2.75v2.5M12 18.75v2.5M4.75 4.75l1.8 1.8M17.45 17.45l1.8 1.8M2.75 12h2.5M18.75 12h2.5M4.75 19.25l1.8-1.8M17.45 6.55l1.8-1.8" />
+                  </svg>
+                </button>
+                <button
+                  class="theme-button"
+                  type="button"
+                  aria-pressed="false"
+                  aria-label="深色模式"
+                  title="深色模式"
+                  data-theme-mode="dark"
+                >
+                  <svg class="theme-button__icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M18.5 14.6A7.5 7.5 0 0 1 9.4 5.5a7.5 7.5 0 1 0 9.1 9.1Z" fill="none" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -82,20 +93,31 @@
 
       <section class="workspace" aria-label="属性倍率查询">
         <div class="selection-bar">
-          <h2 id="selection-title">选择防守方属性</h2>
+          <div class="section-heading">
+            <h2 id="selection-title">选择防守属性</h2>
+            <p id="selection-helper" class="section-helper">最多选 2 个属性</p>
+          </div>
           <div class="selection-meta">
-            <span id="selection-limit" class="selection-limit">最多 2 个</span>
-            <button id="reset-button" class="text-button text-button--subtle" type="button">重置</button>
+            <span id="selection-limit" class="selection-limit">已选 0 / 2</span>
+            <button id="reset-button" class="text-button text-button--subtle" type="button">清空选择</button>
           </div>
         </div>
 
         <div id="type-grid" class="type-grid"></div>
 
         <div class="results-header">
-          <h2 id="results-title">请选择属性</h2>
-          <button id="neutral-toggle" class="text-button text-button--toggle is-active" type="button" aria-pressed="true">
-            隐藏 1x 属性
-          </button>
+          <div class="section-heading">
+            <h2 id="results-title">等待选择</h2>
+            <p id="results-helper" class="section-helper"></p>
+          </div>
+          <div class="results-actions">
+            <button id="focus-toggle" class="text-button text-button--toggle is-active" type="button" aria-pressed="true" hidden>
+              重点倍率：精简
+            </button>
+            <button id="neutral-toggle" class="text-button text-button--toggle is-active" type="button" aria-pressed="true">
+              1x：隐藏
+            </button>
+          </div>
         </div>
         <div id="results-panel" class="results-panel"></div>
         <p id="status-message" class="sr-only" aria-live="polite" aria-atomic="true">请选择属性</p>
