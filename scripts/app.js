@@ -104,6 +104,8 @@ const els = {
   themeButtons: [...document.querySelectorAll(".theme-button")],
 };
 
+let typeButtons = [];
+
 function readStoredThemeMode() {
   try {
     const value = localStorage.getItem(THEME_KEY);
@@ -216,25 +218,65 @@ function dualChip(keys) {
     .join("")}</span>`;
 }
 
-function renderButtons() {
-  const maxSelection = state.mode === "defense" ? 2 : 1;
-  els.selectionLimit.textContent = `最多 ${maxSelection} 个`;
-  els.grid.innerHTML = TYPES.map((type) => `
-    <button
-      class="type-button${state.selected.includes(type.key) ? " is-selected" : ""}"
-      type="button"
-      data-type="${type.key}"
-      aria-pressed="${state.selected.includes(type.key)}"
-      style="--type-button-color:${type.color};--type-button-text:${getContrastText(type.color)};"
-    >
-      <span class="type-button__name">${type.label}</span>
-      <span class="type-button__icon" aria-hidden="true"><img src="${type.icon}" alt="" decoding="async" /></span>
-    </button>
-  `).join("");
+function selectionHint() {
+  if (state.mode === "defense") {
+    return "先选择 1 到 2 个防守属性，下面会按 4x、2x、1x、1/2、1/4 和 0 倍显示会受到的攻击倍率。";
+  }
+
+  return "先选择 1 个攻击属性，下面会分别列出它对单属性和双属性目标的伤害倍率。";
+}
+
+function createTypeButton(type) {
+  const button = document.createElement("button");
+  const name = document.createElement("span");
+  const iconWrap = document.createElement("span");
+  const icon = document.createElement("img");
+
+  button.className = "type-button";
+  button.type = "button";
+  button.dataset.type = type.key;
+  button.style.setProperty("--type-button-color", type.color);
+  button.style.setProperty("--type-button-text", getContrastText(type.color));
+
+  name.className = "type-button__name";
+  name.textContent = type.label;
+
+  iconWrap.className = "type-button__icon";
+  iconWrap.setAttribute("aria-hidden", "true");
+
+  icon.src = type.icon;
+  icon.alt = "";
+  icon.decoding = "async";
+
+  iconWrap.append(icon);
+  button.append(name, iconWrap);
+  return button;
+}
+
+function renderTypeGrid() {
+  const fragment = document.createDocumentFragment();
+  typeButtons = TYPES.map((type) => {
+    const button = createTypeButton(type);
+    fragment.append(button);
+    return button;
+  });
+
+  els.grid.replaceChildren(fragment);
+  syncTypeButtons();
+}
+
+function syncTypeButtons() {
+  typeButtons.forEach((button) => {
+    const selected = state.selected.includes(button.dataset.type);
+    button.classList.toggle("is-selected", selected);
+    button.setAttribute("aria-pressed", selected ? "true" : "false");
+  });
 }
 
 function renderMeta() {
+  const maxSelection = state.mode === "defense" ? 2 : 1;
   els.selectionTitle.textContent = state.mode === "defense" ? "选择防守方属性" : "选择攻击方属性";
+  els.selectionLimit.textContent = `最多 ${maxSelection} 个`;
 
   els.modeButtons.forEach((button) => {
     const active = button.dataset.mode === state.mode;
@@ -280,8 +322,13 @@ const resultRow = (label, caption, body) => `
 `;
 
 function renderEmpty() {
-  els.resultsTitle.textContent = "请选择属性";
-  els.resultsPanel.innerHTML = '<div class="empty-state">请选择属性</div>';
+  els.resultsTitle.textContent = "等待选择";
+  els.resultsPanel.innerHTML = `
+    <div class="empty-state" role="status">
+      <p class="empty-state__title">还没有选择属性</p>
+      <p class="empty-state__desc">${selectionHint()}</p>
+    </div>
+  `;
 }
 
 function renderDefenseResults() {
@@ -341,14 +388,20 @@ function renderResults() {
 
 function announce() {
   const side = state.mode === "defense" ? "防守方" : "攻击方";
-  const selection = state.selected.length ? state.selected.map((key) => findType(key).label).join(" / ") : "未选择";
+
+  if (!state.selected.length) {
+    els.statusMessage.textContent = `${side}未选择，${selectionHint()}`;
+    return;
+  }
+
+  const selection = state.selected.map((key) => findType(key).label).join(" / ");
   const neutralState = state.neutralHidden ? "隐藏" : "显示";
   els.statusMessage.textContent = `${side}：${selection}，${neutralState} 1x 属性`;
 }
 
 function render() {
   renderMeta();
-  renderButtons();
+  syncTypeButtons();
   renderResults();
   announce();
 }
@@ -392,7 +445,9 @@ els.themeButtons.forEach((button) => {
 
 els.neutralToggle.addEventListener("click", () => {
   state.neutralHidden = !state.neutralHidden;
-  render();
+  renderResults();
+  announce();
+  renderMeta();
 });
 
 els.reset.addEventListener("click", () => {
@@ -414,6 +469,7 @@ if (themeQuery) {
   }
 }
 
+renderTypeGrid();
 applyTheme(state.themeMode, false);
 render();
 
