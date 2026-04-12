@@ -17,9 +17,20 @@
   --type-selected-shadow: 0 12px 24px rgba(31, 42, 37, 0.2);
   --type-button-sheen: rgba(255, 255, 255, 0.22);
   --combo-divider: rgba(255, 255, 255, 0.24);
+  --control-active-bg: #ffffff;
+  --control-active-text: #16201b;
+  --control-active-ring: rgba(88, 123, 105, 0.28);
+  --control-active-shadow: 0 8px 18px rgba(31, 42, 37, 0.12);
   --page-width: 920px;
   --radius-sm: 10px;
   --radius-pill: 999px;
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
 }
 
 :root[data-theme="dark"] {
@@ -41,6 +52,10 @@
   --type-selected-shadow: 0 14px 28px rgba(0, 0, 0, 0.38);
   --type-button-sheen: rgba(255, 255, 255, 0.08);
   --combo-divider: rgba(237, 243, 239, 0.22);
+  --control-active-bg: #31413a;
+  --control-active-text: #f4faf6;
+  --control-active-ring: rgba(159, 196, 178, 0.34);
+  --control-active-shadow: 0 10px 22px rgba(0, 0, 0, 0.3);
 }
 
 * {
@@ -71,6 +86,21 @@ textarea {
   color: inherit;
 }
 
+button,
+.mode-button,
+.theme-button,
+.text-button,
+.type-button {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+button:focus:not(:focus-visible) {
+  outline: none;
+}
+
 button:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
@@ -79,13 +109,13 @@ button:focus-visible {
 .page-shell {
   width: min(calc(100% - 1.5rem), var(--page-width));
   margin: 0 auto;
-  padding: max(env(safe-area-inset-top), 1rem) 0 max(env(safe-area-inset-bottom), 1.5rem);
+  padding: max(env(safe-area-inset-top), var(--space-md)) 0 max(env(safe-area-inset-bottom), var(--space-lg));
 }
 
 .page-header {
   display: grid;
   justify-items: center;
-  gap: 0.9rem;
+  gap: var(--space-sm);
 }
 
 .page-header h1 {
@@ -105,7 +135,7 @@ button:focus-visible {
 .results-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-sm);
 }
 
 .toolbar,
@@ -126,19 +156,27 @@ button:focus-visible {
 
 .control-strip {
   justify-content: center;
+  gap: var(--space-md);
 }
 
 .mode-switch,
 .theme-switch {
   display: inline-grid;
   grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  gap: 0.25rem;
-  padding: 0.25rem;
+  gap: var(--space-2xs);
+  padding: var(--space-2xs);
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
   box-shadow: var(--shadow-soft);
+}
+
+.mode-switch {
+  grid-auto-columns: 1fr;
+}
+
+.theme-switch {
+  grid-auto-columns: minmax(2.75rem, auto);
 }
 
 .mode-button,
@@ -152,17 +190,57 @@ button:focus-visible {
 .mode-button,
 .theme-button {
   min-height: 2.75rem;
-  padding: 0.45rem 0.95rem;
   border-radius: var(--radius-pill);
   background: transparent;
   color: var(--text-secondary);
-  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease,
+    filter 0.18s ease;
+}
+
+.mode-button {
+  padding: 0.45rem 0.95rem;
+}
+
+.theme-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  padding: 0.45rem;
 }
 
 .mode-button.is-active,
 .theme-button.is-active {
-  background: var(--surface-strong);
-  color: var(--text-primary);
+  background: var(--control-active-bg);
+  color: var(--control-active-text);
+  box-shadow: inset 0 0 0 1px var(--line-strong), 0 0 0 3px var(--control-active-ring),
+    var(--control-active-shadow);
+  filter: saturate(1.04);
+}
+
+.mode-button.is-active {
+  transform: translateY(-1px);
+  font-weight: 700;
+}
+
+.theme-button.is-active {
+  transform: translateY(-1px) scale(1.02);
+}
+
+.theme-button.is-active .theme-button__icon {
+  transform: scale(1.08);
+}
+
+.theme-button__icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  transition: transform 0.18s ease;
 }
 
 .text-button {
@@ -190,7 +268,7 @@ button:focus-visible {
 }
 
 .workspace {
-  margin-top: 1rem;
+  margin-top: var(--space-md);
   padding-top: 0.9rem;
   border-top: 1px solid var(--line);
 }
@@ -203,7 +281,7 @@ button:focus-visible {
 }
 
 .results-header {
-  margin-top: 1.5rem;
+  margin-top: var(--space-lg);
   padding-bottom: 0.6rem;
 }
 
@@ -441,9 +519,9 @@ button:focus-visible {
 
   .toolbar {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: start;
-    gap: 0.75rem;
+    gap: var(--space-sm);
   }
 
   .control-strip {
@@ -456,20 +534,25 @@ button:focus-visible {
     min-width: 0;
   }
 
+  .theme-switch {
+    justify-self: end;
+  }
+
   .type-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem;
   }
 
   .type-button {
-    min-block-size: 3.15rem;
-    padding: 0.72rem 2.3rem 0.72rem 0.82rem;
-    font-size: 0.92rem;
+    min-block-size: 3rem;
+    padding: 0.68rem 1.85rem 0.68rem 0.72rem;
+    font-size: 0.9rem;
   }
 
   .type-button__icon {
-    inset-inline-end: 0.52rem;
-    inline-size: 1.08rem;
-    block-size: 1.08rem;
+    inset-inline-end: 0.42rem;
+    inline-size: 0.96rem;
+    block-size: 0.96rem;
   }
 
   .selection-bar,
@@ -516,9 +599,45 @@ button:focus-visible {
   border: 0;
 }
 
+@media (min-width: 430px) and (max-width: 560px) {
+  .type-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .type-button {
+    min-block-size: 2.9rem;
+    padding-inline: 0.62rem 1.6rem;
+    font-size: 0.86rem;
+  }
+
+  .type-button__icon {
+    inset-inline-end: 0.34rem;
+    inline-size: 0.88rem;
+    block-size: 0.88rem;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .mode-button:active,
+  .theme-button:active,
+  .text-button:active {
+    transform: scale(0.985);
+  }
+
+  .mode-button.is-active:active,
+  .theme-button.is-active:active {
+    transform: scale(0.99);
+  }
+
+  .type-button:active {
+    transform: scale(0.985);
+    filter: saturate(1.08) brightness(0.98);
+  }
+}
+
 @media (min-width: 720px) {
   .page-shell {
-    padding-top: 1.5rem;
+    padding-top: var(--space-lg);
     padding-bottom: 2.25rem;
   }
 
